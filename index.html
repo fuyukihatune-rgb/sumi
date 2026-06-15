@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<title>墨流し — 夜、ひとつ手放す</title>
+<meta name="description" content="就寝前に、心の引っかかりをひとつ墨のように水へ流す所作。測らない・貯めない。記録は端末の中だけ。" />
+<meta name="theme-color" content="#0e0f12" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" href="./icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="./icon.svg" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="墨流し" />
+<meta property="og:title" content="墨流し — 夜、ひとつ手放す" />
+<meta property="og:description" content="眠れても眠れなくても、心が乱れていない。就寝前にひとつだけ、墨のように水へ流す。" />
+<meta property="og:type" content="website" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  /* ── ataraxia works の共通トークンを「夜（ダーク変奏）」に反転 ── */
+  :root {
+    --bg: #0e0f12;
+    --bg-2: #14161b;
+    --surface: #16181d;
+    --border: #262a31;
+    --border-light: #1d2026;
+    --text: #e9eaed;
+    --text-2: #aeb2bb;
+    --text-3: #7e828c;
+    --text-4: #565a63;
+    --text-5: #3a3d44;
+    --accent: #e9eaed;
+    --accent-strong: #f3f4f6;
+    --accent-soft: rgba(255,255,255,0.06);
+    --ink: #cdd6ff;            /* 水中で淡く光る墨の色（藍がかった白） */
+    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 10px 34px rgba(0,0,0,0.55);
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html, body { background: var(--bg); color: var(--text); font-family: -apple-system, "Helvetica Neue", "Noto Sans JP", sans-serif; -webkit-font-smoothing: antialiased; line-height: 1.7; }
+  body { min-height: 100vh; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+  button { font-family: inherit; color: inherit; }
+  ::selection { background: rgba(205,214,255,0.18); }
+
+  /* ── Nav（家族と同じ：sticky・中央タイトル・右にギア） ── */
+  .nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: center; height: calc(52px + var(--safe-top)); padding: var(--safe-top) 16px 0; background: rgba(14,15,18,0.7); backdrop-filter: saturate(160%) blur(12px); -webkit-backdrop-filter: saturate(160%) blur(12px); border-bottom: 1px solid var(--border-light); }
+  .nav-title { font-size: 17px; font-weight: 800; letter-spacing: 0.14em; color: var(--text); }
+  .nav-gear { position: absolute; right: 12px; top: 50%; transform: translateY(calc(-50% + var(--safe-top) / 2)); background: none; border: none; font-size: 18px; color: var(--text-3); cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .nav-gear:active { background: var(--accent-soft); }
+
+  /* ── Layout ── */
+  .main { max-width: 560px; margin: 0 auto; padding: 22px 20px calc(40px + var(--safe-bottom)); }
+
+  /* ── Buttons（家族の角丸・押下感は踏襲、色はダーク用に静かに） ── */
+  .btn-primary { background: var(--accent-soft); color: var(--text); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; transition: opacity 0.15s, transform 0.1s, background 0.15s; }
+  .btn-primary:active { transform: translateY(1px); background: rgba(255,255,255,0.1); }
+  .btn-ghost { background: none; border: 1px solid var(--border); border-radius: 999px; padding: 9px 18px; font-size: 12.5px; color: var(--text-3); cursor: pointer; transition: color 0.15s, border-color 0.15s; }
+  .btn-ghost:active { color: var(--text); border-color: var(--text-4); }
+  .link-quiet { background: none; border: none; color: var(--text-3); font-size: 12.5px; cursor: pointer; padding: 4px 6px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border); }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  .rise { animation: rise 0.6s cubic-bezier(0.2,0.7,0.2,1) both; }
+
+  /* ── ホーム（夜）：極限までミニマル ── */
+  .home { min-height: calc(100vh - 52px - var(--safe-top)); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 24px calc(60px + var(--safe-bottom)); gap: 26px; }
+  .home-greet { font-size: 13px; color: var(--text-3); letter-spacing: 0.08em; }
+  .home-lead { font-size: 19px; font-weight: 600; color: var(--text-2); letter-spacing: 0.02em; line-height: 1.9; }
+  .home-cta { width: 100%; max-width: 260px; }
+  .home-cta .btn-primary { padding: 16px; font-size: 15px; letter-spacing: 0.1em; }
+  .home-foot { font-size: 11px; color: var(--text-4); letter-spacing: 0.04em; }
+
+  /* ── 書く画面 ── */
+  .write { min-height: calc(100vh - 52px - var(--safe-top)); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 24px calc(80px + var(--safe-bottom)); gap: 30px; }
+  .write-cap { font-size: 13px; color: var(--text-3); letter-spacing: 0.05em; }
+  .write-field { width: 100%; max-width: 420px; }
+  .write-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text); font-size: 19px; font-family: inherit; text-align: center; padding: 12px 6px; line-height: 1.6; outline: none; caret-color: var(--ink); transition: border-color 0.3s; }
+  .write-input::placeholder { color: var(--text-4); }
+  .write-input:focus { border-color: var(--text-4); }
+  .write-count { font-size: 11px; color: var(--text-4); margin-top: 10px; min-height: 14px; letter-spacing: 0.04em; }
+  .write-actions { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; max-width: 260px; }
+
+  /* ── 流す画面（全画面の水）＋ 就寝・朝も同じ被せ方 ── */
+  .stage { position: fixed; inset: 0; z-index: 50; background: radial-gradient(130% 100% at 50% 18%, #15171f 0%, #0e0f14 52%, #07080b 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: calc(24px + var(--safe-top)) 22px calc(34px + var(--safe-bottom)); overflow: hidden; touch-action: none; }
+  #ink { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .stage-top { position: absolute; top: calc(20px + var(--safe-top)); left: 0; right: 0; text-align: center; font-size: 13px; color: var(--text-3); letter-spacing: 0.1em; transition: opacity 0.6s; pointer-events: none; }
+  .stage-hint { position: absolute; bottom: calc(40px + var(--safe-bottom)); left: 0; right: 0; text-align: center; transition: opacity 0.6s; }
+  .stage-hint .ghost-line { font-size: 12.5px; color: var(--text-4); letter-spacing: 0.08em; margin-bottom: 14px; }
+  .stage-close { position: absolute; top: calc(16px + var(--safe-top)); right: 16px; background: none; border: none; font-size: 13px; color: var(--text-4); cursor: pointer; padding: 8px 12px; border-radius: 999px; z-index: 2; }
+  .fade-out { opacity: 0 !important; }
+
+  /* ── 就寝画面 ── */
+  .sleep { background: radial-gradient(120% 100% at 50% 30%, #0c0d11 0%, #070809 70%, #050507 100%); cursor: pointer; }
+  .sleep-word { font-size: 20px; font-weight: 600; color: var(--text-2); letter-spacing: 0.4em; padding-left: 0.4em; opacity: 0; animation: fadein 2.6s ease 0.3s forwards; }
+  .breath-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--ink); opacity: 0.5; margin-top: 40px; animation: breathe 9s ease-in-out infinite; }
+  @keyframes breathe { 0%,100% { transform: scale(0.7); opacity: 0.28; } 50% { transform: scale(1.5); opacity: 0.6; } }
+  .sleep-exit { position: absolute; bottom: calc(34px + var(--safe-bottom)); font-size: 11.5px; color: var(--text-5); letter-spacing: 0.06em; opacity: 0; animation: fadein 2s ease 4s forwards; }
+
+  /* ── 朝の確認（採点しない・本文は出さない） ── */
+  .morning { background: radial-gradient(130% 100% at 50% 22%, #1a1c22 0%, #101116 60%, #0b0c10 100%); }
+  .morning-word { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: 0.06em; }
+  .morning-sub { font-size: 14px; color: var(--text-3); margin-top: 16px; line-height: 1.9; letter-spacing: 0.03em; }
+  .morning-actions { margin-top: 40px; width: 100%; max-width: 260px; }
+
+  /* ── 設定（オーバーレイ） ── */
+  .sheet { position: fixed; inset: 0; z-index: 80; background: rgba(6,7,9,0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; animation: fadein 0.2s ease; }
+  .sheet-card { width: 100%; max-width: 560px; background: var(--surface); border: 1px solid var(--border); border-bottom: none; border-radius: 20px 20px 0 0; padding: 22px 22px calc(24px + var(--safe-bottom)); box-shadow: var(--shadow); animation: rise 0.3s cubic-bezier(0.2,0.7,0.2,1) both; }
+  .sheet-grip { width: 38px; height: 4px; border-radius: 999px; background: var(--text-5); margin: 0 auto 18px; }
+  .sheet-title { font-size: 17px; font-weight: 800; margin-bottom: 14px; }
+  .set-row { font-size: 13.5px; color: var(--text-2); line-height: 1.85; padding: 10px 0; border-top: 1px solid var(--border-light); }
+  .set-row:first-of-type { border-top: none; }
+  .set-row b { color: var(--text); font-weight: 700; }
+  .set-foot { text-align: center; font-size: 11px; color: var(--text-4); margin-top: 18px; letter-spacing: 0.04em; line-height: 1.9; }
+  .set-close { margin-top: 18px; }
+
+  /* ── 寄付（家族と同じ：暗号資産アドレス＋コピー） ── */
+  .set-label { font-size: 14px; font-weight: 800; margin-bottom: 6px; }
+  .set-desc { font-size: 12.5px; color: var(--text-3); line-height: 1.8; margin-bottom: 4px; }
+  .donate-block { margin-top: 12px; }
+  .donate-label { font-size: 12.5px; font-weight: 700; margin-bottom: 6px; color: var(--text-2); }
+  .eth-box { background: rgba(0,0,0,0.28); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 12px; font-family: ui-monospace, "SF Mono", Menlo, monospace; word-break: break-all; line-height: 1.6; color: var(--text-2); margin-bottom: 10px; }
+  .btn-soft { width: 100%; background: var(--accent-soft); color: var(--text); border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+  .btn-soft:active { transform: translateY(1px); background: rgba(255,255,255,0.1); }
+  .toast { position: fixed; left: 50%; bottom: calc(26px + var(--safe-bottom)); transform: translateX(-50%) translateY(20px); background: #2a2f38; color: #fff; font-size: 13px; padding: 11px 20px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; z-index: 90; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise, .sleep-word, .sleep-exit, .breath-dot, .sheet, .sheet-card { animation: none; opacity: 1; }
+    .breath-dot { opacity: 0.4; }
+  }
+  @media (max-width: 360px) { .home-lead { font-size: 17px; } .write-input { font-size: 17px; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const APP_VERSION = '0.1.0';
+const STORAGE_KEY = 'sumi.v1';
+const VERSION_KEY = 'sumi.version';
+
+/* ── 状態 ──
+   思想（貯めない／測らない）に従い、端末に残すのは最小限。
+   ・引っかかりの「本文」は一切保存しない（メモリ上のみ。散った瞬間に消える）
+   ・残すのは「ゆうべ流した日付」と「朝の確認が未了か」だけ。 */
+let state = { lastFlowDate: null, morningPending: false };
+let screen = 'home';   // 'home' | 'write' | 'flow' | 'sleep' | 'morning'
+let draft = '';        // 書いている最中の本文（メモリのみ）
+
+function loadState() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) state = Object.assign(state, JSON.parse(raw)); } catch {}
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+}
+function todayKey() { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate(); }
+function greeting() { const h = new Date().getHours(); if (h >= 4 && h < 11) return 'おはよう'; if (h >= 11 && h < 17) return 'こんにちは'; return 'こんばんは'; }
+
+/* ── 開発者情報・寄付（ataraxia works 共通） ── */
+const DEV_INFO = { name: '田中志（たなかしるす）' };
+const DONATIONS = [
+  { key: 'btc', label: 'ビットコイン（BTC）', address: '1EHshWSHyvJFjkAYQ5rPX7nKo2FRKWF58f' },
+  { key: 'eth', label: 'イーサリアム（ETH）', address: '0xb7da6af09c0f8db95d0c0e352e32d1915483931e' },
+];
+function activeDonations() { return DONATIONS.filter(d => d.address && d.address.trim()); }
+function showToast(msg) {
+  const t = document.getElementById('toast'); if (!t) return;
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(showToast._t); showToast._t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+function copyAddr(text) {
+  const done = () => showToast('アドレスをコピーしました');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done) {
+  try { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }
+  catch { showToast('コピーできませんでした'); }
+}
+function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+/* ── 描画 ── */
+const app = document.getElementById('app');
+let showSettings = false;
+
+function render() {
+  let inner = '';
+  if (screen === 'home')         inner = renderHome();
+  else if (screen === 'write')   inner = renderWrite();
+  else if (screen === 'flow')    inner = renderFlow();
+  else if (screen === 'sleep')   inner = renderSleep();
+  else if (screen === 'morning') inner = renderMorning();
+  if (showSettings) inner += renderSettings();
+  app.innerHTML = inner;
+  bind();
+}
+
+function chrome(inner) {
+  return `
+    <nav class="nav">
+      <div class="nav-title">墨流し</div>
+      <button class="nav-gear" data-act="settings" aria-label="設定">⚙</button>
+    </nav>
+    <main class="main">${inner}</main>`;
+}
+
+function renderHome() {
+  return chrome(`
+    <div class="home rise">
+      <div class="home-greet">${greeting()}</div>
+      <div class="home-lead">今夜、ひとつだけ。<br>心の引っかかりを、水へ。</div>
+      <div class="home-cta"><button class="btn-primary" data-act="toWrite">書く</button></div>
+      <div class="home-foot">測らない · 貯めない · 端末の中だけ</div>
+    </div>`);
+}
+
+function renderWrite() {
+  return chrome(`
+    <div class="write rise">
+      <div class="write-cap">いま、心に引っかかっていること</div>
+      <div class="write-field">
+        <input id="noteInput" class="write-input" type="text" maxlength="42" autocomplete="off"
+               autocapitalize="off" enterkeyhint="done" placeholder="ひとことだけ" value="${escAttr(draft)}" />
+        <div class="write-count" id="noteCount"></div>
+      </div>
+      <div class="write-actions">
+        <button class="btn-primary" id="placeBtn" data-act="place" disabled>水に置く</button>
+        <button class="btn-ghost" data-act="toHome">やめる</button>
+      </div>
+    </div>`);
+}
+
+function renderFlow() {
+  return `
+    <div class="stage" id="flowStage">
+      <canvas id="ink"></canvas>
+      <button class="stage-close" data-act="toHome">とじる</button>
+      <div class="stage-top" id="flowTop">水面に浮かべました</div>
+      <div class="stage-hint" id="flowHint">
+        <div class="ghost-line">下へ払って、手放す</div>
+        <button class="btn-ghost" data-act="release">そっと手放す</button>
+      </div>
+    </div>`;
+}
+
+function renderSleep() {
+  return `
+    <div class="stage sleep" id="sleepStage" data-act="sleepExit">
+      <div class="sleep-word">おやすみ</div>
+      <div class="breath-dot"></div>
+      <div class="sleep-exit">画面にふれると、ホームへ</div>
+    </div>`;
+}
+
+function renderMorning() {
+  return `
+    <div class="stage morning rise">
+      <div class="morning-word">${greeting()}</div>
+      <div class="morning-sub">ゆうべ、ひとつ流しました。<br>それだけで、じゅうぶん。</div>
+      <div class="morning-actions"><button class="btn-primary" data-act="startDay">今日をはじめる</button></div>
+    </div>`;
+}
+
+function renderSettings() {
+  const donate = activeDonations().length
+    ? '<div class="set-desc">よかったら暗号資産で応援できます。任意です。</div>'
+      + activeDonations().map(d =>
+          '<div class="donate-block"><div class="donate-label">' + escHtml(d.label) + '</div>'
+          + '<div class="eth-box">' + escHtml(d.address) + '</div>'
+          + '<button class="btn-soft" onclick="copyAddr(\'' + escHtml(d.address) + '\')">アドレスをコピー</button></div>'
+        ).join('')
+    : '<div class="set-desc" style="margin-bottom:0">寄付先はまだ設定されていません。</div>';
+  return `
+    <div class="sheet" data-act="closeSettings">
+      <div class="sheet-card" data-stop="1">
+        <div class="sheet-grip"></div>
+        <div class="sheet-title">墨流しについて</div>
+        <div class="set-row">この夜の所作は、<b>測りません</b>。睡眠時間も、深さも、スコアも出しません。</div>
+        <div class="set-row">連続記録もバッジもありません。「流せた」が続いても褒めず、「のこった」夜も責めません。</div>
+        <div class="set-row">書いた引っかかりの<b>本文は、どこにも保存しません</b>。流した瞬間に消えます。端末に残るのは「ゆうべ流した」という事実だけ。</div>
+        <div class="set-row"><b>サーバーへは何も送りません。</b>広告も、追跡も、ログインもありません。</div>
+
+        <div class="set-label" style="margin-top:20px">開発者に寄付する</div>
+        ${donate}
+
+        <button class="btn-ghost set-close" data-act="closeSettings">とじる</button>
+        <div class="set-foot">墨流し v${APP_VERSION}<br>Ataraxia Works · 夜、ひとつ手放す<br>開発：${escHtml(DEV_INFO.name)}<br>© 2026 田中志 / Ataraxia Works</div>
+      </div>
+    </div>`;
+}
+
+/* ── イベント束ね（家族と同じく data-act で集約） ── */
+function bind() {
+  app.querySelectorAll('[data-act]').forEach(el => {
+    el.onclick = (e) => {
+      const act = el.getAttribute('data-act');
+      if (act === 'settings')      { showSettings = true; render(); }
+      else if (act === 'closeSettings') { if (e.target.getAttribute('data-stop')) return; showSettings = false; render(); }
+      else if (act === 'toWrite')  { draft = ''; screen = 'write'; render(); focusInput(); }
+      else if (act === 'toHome')   { stopInk(); draft = ''; screen = 'home'; render(); }
+      else if (act === 'place')    { placeNote(); }
+      else if (act === 'release')  { releaseInk(0); }
+      else if (act === 'sleepExit'){ screen = 'home'; render(); }
+      else if (act === 'startDay') { state.morningPending = false; saveState(); screen = 'home'; render(); }
+    };
+  });
+  // 設定シートの中身タップで閉じないように
+  const stop = app.querySelector('[data-stop]'); if (stop) stop.onclick = (e) => e.stopPropagation();
+
+  if (screen === 'write') {
+    const input = app.querySelector('#noteInput');
+    const count = app.querySelector('#noteCount');
+    const btn = app.querySelector('#placeBtn');
+    if (input) {
+      const sync = () => {
+        draft = input.value;
+        const n = draft.trim().length;
+        btn.disabled = n === 0;
+        count.textContent = n ? `${n} / 42` : '';
+      };
+      input.oninput = sync;
+      input.onkeydown = (e) => { if (e.key === 'Enter' && draft.trim()) { e.preventDefault(); placeNote(); } };
+      sync();
+    }
+  }
+  if (screen === 'flow') requestAnimationFrame(() => setupInk(draft));
+}
+
+function focusInput() { setTimeout(() => { const i = app.querySelector('#noteInput'); if (i) i.focus(); }, 60); }
+function escAttr(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function placeNote() {
+  const text = draft.trim();
+  if (!text) return;
+  // 本文は state に入れない。flow の間だけ draft（メモリ）として持つ。
+  screen = 'flow';
+  render();
+}
+
+/* ════════════════════════════════════════════════════════════
+   核：墨の拡散（vanilla canvas）
+   書いた文字＝静止した粒子群として水面に浮かぶ → 払う/待つ で
+   下へ拡散し、薄れて消える。消えたら就寝へ。
+   ════════════════════════════════════════════════════════════ */
+let ink = null;
+function stopInk() { if (ink && ink.raf) cancelAnimationFrame(ink.raf); ink = null; }
+
+function reducedMotion() {
+  return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function setupInk(text) {
+  const stage = document.getElementById('flowStage');
+  const canvas = document.getElementById('ink');
+  if (!stage || !canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = stage.clientWidth, H = stage.clientHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // 1) 文字をオフスクリーンに描いてサンプリング
+  const off = document.createElement('canvas');
+  off.width = W; off.height = H;
+  const octx = off.getContext('2d');
+  let fontSize = Math.min(46, Math.max(22, Math.floor(W / Math.max(6, text.length * 0.62))));
+  octx.font = `600 ${fontSize}px -apple-system, "Helvetica Neue", "Noto Sans JP", sans-serif`;
+  // 横幅に収まるよう必要なら縮める
+  while (octx.measureText(text).width > W * 0.84 && fontSize > 12) {
+    fontSize -= 1; octx.font = `600 ${fontSize}px -apple-system, "Helvetica Neue", "Noto Sans JP", sans-serif`;
+  }
+  octx.fillStyle = '#fff';
+  octx.textAlign = 'center';
+  octx.textBaseline = 'middle';
+  octx.fillText(text, W / 2, H * 0.42);
+
+  const img = octx.getImageData(0, 0, W, H).data;
+  const step = 3;
+  let pts = [];
+  for (let y = 0; y < H; y += step) {
+    for (let x = 0; x < W; x += step) {
+      if (img[(y * W + x) * 4 + 3] > 128) pts.push({ x, y });
+    }
+  }
+  // シャッフルして上限を設ける（端末負荷の安定）
+  for (let i = pts.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [pts[i], pts[j]] = [pts[j], pts[i]]; }
+  const MAX = 2200;
+  if (pts.length > MAX) pts = pts.slice(0, MAX);
+
+  const particles = pts.map(p => ({
+    hx: p.x, hy: p.y, x: p.x, y: p.y, vx: 0, vy: 0,
+    life: 1, size: 2.0 + Math.random() * 0.8, seed: Math.random() * 6.28
+  }));
+
+  // 2) 淡い光の粒スプライトを一枚だけ用意（毎フレーム生成は重いので使い回す）
+  const sprite = document.createElement('canvas');
+  sprite.width = sprite.height = 32;
+  const sctx = sprite.getContext('2d');
+  const g = sctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  g.addColorStop(0, 'rgba(205,214,255,0.95)');
+  g.addColorStop(0.5, 'rgba(190,202,255,0.35)');
+  g.addColorStop(1, 'rgba(190,202,255,0)');
+  sctx.fillStyle = g; sctx.fillRect(0, 0, 32, 32);
+
+  ink = { ctx, W, H, particles, sprite, released: false, releaseImpulse: 0, t: 0, raf: 0, startedAt: performance.now() };
+
+  // reduced-motion：拡散は出さず、静かにフェードして就寝へ
+  if (reducedMotion()) {
+    ctx.globalCompositeOperation = 'lighter';
+    particles.forEach(p => { ctx.globalAlpha = 0.85; ctx.drawImage(sprite, p.hx - 5, p.hy - 5, 10, 10); });
+    ctx.globalAlpha = 1;
+    setTimeout(() => { canvas.style.transition = 'opacity 1.6s'; canvas.style.opacity = '0'; }, 900);
+    setTimeout(() => goSleep(), 2700);
+    return;
+  }
+
+  attachGestures(stage);
+  loopInk();
+}
+
+function loopInk() {
+  if (!ink) return;
+  const { ctx, W, H, particles, sprite } = ink;
+  ink.t += 0.016;
+  const t = ink.t;
+
+  // トレイル：薄い背景色を重ねて“墨のにじみ”を残す
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = 'rgba(8,9,13,0.12)';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.globalCompositeOperation = 'lighter';
+  let alive = 0;
+  for (const p of particles) {
+    if (p.life <= 0) continue;
+    if (ink.released) {
+      // ゆるい渦（noiseの代わりに正弦の重ね合わせ）＋下方向のバイアス
+      const a = Math.sin(p.x * 0.012 + t * 0.7 + p.seed) + Math.cos(p.y * 0.013 - t * 0.55);
+      p.vx += Math.cos(a) * 0.05;
+      p.vy += Math.sin(a) * 0.05 + 0.035 + ink.releaseImpulse;
+      p.vx *= 0.96; p.vy *= 0.965;
+      p.x += p.vx; p.y += p.vy;
+      p.life -= 0.0058;
+      p.size += 0.16;            // 拡散して大きく薄く
+    } else {
+      // 浮遊：水面でゆっくり揺れる
+      p.x = p.hx + Math.sin(t * 0.9 + p.seed) * 2.0 + Math.sin(t * 0.4) * 1.2;
+      p.y = p.hy + Math.cos(t * 0.8 + p.seed) * 1.6 + Math.sin(t * 0.6) * 1.0;
+    }
+    const a = ink.released ? Math.max(0, p.life) * 0.7 : 0.85;
+    ctx.globalAlpha = a;
+    const s = p.size;
+    ctx.drawImage(sprite, p.x - s, p.y - s, s * 2, s * 2);
+    if (p.life > 0) alive++;
+  }
+  ctx.globalAlpha = 1;
+  ink.releaseImpulse *= 0.9;   // 払いの勢いは一瞬で減衰
+
+  if (ink.released && (alive === 0 || performance.now() - ink.releaseAt > 6000)) {
+    goSleep();
+    return;
+  }
+  // 待っても手放さない夜のために、しばらくで自分から溶けはじめる
+  if (!ink.released && performance.now() - ink.startedAt > 9000) releaseInk(0);
+
+  ink.raf = requestAnimationFrame(loopInk);
+}
+
+function releaseInk(impulse) {
+  if (!ink || ink.released) return;
+  ink.released = true;
+  ink.releaseAt = performance.now();
+  ink.releaseImpulse = impulse || 0;
+  for (const p of ink.particles) {
+    p.vx = (Math.random() - 0.5) * 1.1;
+    p.vy = 0.4 + Math.random() * 0.7;
+  }
+  const top = document.getElementById('flowTop');
+  const hint = document.getElementById('flowHint');
+  if (top) top.classList.add('fade-out');
+  if (hint) hint.classList.add('fade-out');
+}
+
+// 下へ払うジェスチャ
+function attachGestures(stage) {
+  let startY = 0, lastY = 0, lastT = 0, dragging = false;
+  stage.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('button')) return;
+    dragging = true; startY = lastY = e.clientY; lastT = performance.now();
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    lastY = e.clientY; lastT = performance.now();
+  });
+  stage.addEventListener('pointerup', () => {
+    if (!dragging) return;
+    dragging = false;
+    const dist = lastY - startY;
+    if (dist > 46) {
+      const v = Math.min(0.5, dist / 600);   // 払いの勢いを下方向の初速に
+      releaseInk(v);
+    }
+  });
+  stage.addEventListener('pointercancel', () => { dragging = false; });
+}
+
+function goSleep() {
+  stopInk();
+  // 「ゆうべ流した」事実だけを残す（本文は残さない）
+  state.lastFlowDate = todayKey();
+  state.morningPending = true;
+  saveState();
+  draft = '';
+  screen = 'sleep';
+  render();
+}
+
+/* ── 朝の判定：別の日に開いたら、一度だけ静かな確認（採点なし） ── */
+function routeOnOpen() {
+  if (state.morningPending && state.lastFlowDate && state.lastFlowDate !== todayKey()) {
+    screen = 'morning';
+  } else {
+    screen = 'home';
+  }
+}
+
+/* ── バージョン更新の取りこぼし対策（家族と同じ作法） ── */
+function checkVersion() {
+  let prev = null;
+  try { prev = localStorage.getItem(VERSION_KEY); } catch {}
+  if (prev !== APP_VERSION) { try { localStorage.setItem(VERSION_KEY, APP_VERSION); } catch {} }
+}
+
+/* ── 起動 ── */
+loadState();
+checkVersion();
+routeOnOpen();
+render();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
+}
+</script>
+</body>
+</html>
