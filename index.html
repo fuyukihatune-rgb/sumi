@@ -132,6 +132,10 @@
     .breath-dot { opacity: 0.4; }
   }
   @media (max-width: 360px) { .home-lead { font-size: 17px; } .write-input { font-size: 17px; } }
+
+  /* キーボードアクセシビリティ */
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; border-radius: 4px; }
+  button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 </style>
 </head>
 <body>
