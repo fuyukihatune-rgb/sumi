@@ -37,3 +37,10 @@
 3. TWA 署名は共有 `ataraxia.jks`（alias `ataraxia`、パッケージ `net.xdcyw.sumi`）。`icons/icon-{192,512}.png` と `.well-known/assetlinks.json` は用意済み。Android 版は `sumi.apk` としてこのリポジトリに同梱（landing から DL）。
 
 © 2026 田中志 / Ataraxia Works
+
+## アップデート履歴
+
+## 2026-06-16
+- OGタグ追加（og:title / og:description / og:image / og:url / og:type / twitter:card）
+- キーボードアクセシビリティ改善（:focus-visible スタイル追加）
+- manifest.json 整備（scope・categories・orientation 修正）

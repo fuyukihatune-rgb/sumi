@@ -1,5 +1,5 @@
 // バージョンを上げるたびに CACHE_NAME も変えること（= 古いキャッシュが必ず捨てられる）
-const CACHE_NAME = 'sumi-0.1.0';
+const CACHE_NAME = 'sumi-0.2.0';
 const CACHE_URLS = ['./', './index.html', './manifest.json', './icon.svg', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
